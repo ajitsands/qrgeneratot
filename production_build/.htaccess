@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Serve index.html for all requests to support React routing (if added later)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)$ /index.html [QSA,L]
+</IfModule>
+
+# Ensure index.html is prioritized over index.php
+DirectoryIndex index.html index.php
+
+# Prevent directory listing (which can cause 403 Forbidden errors)
+Options -Indexes
