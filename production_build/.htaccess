@@ -1,6 +1,12 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /production_build/
+  
+  # API Routes (Extensionless)
+  RewriteRule ^api/generateqr/?$ api/generate.php [QSA,L]
+  RewriteRule ^api/activate/?$ api/activate.php [QSA,L]
+
+  # React Frontend Catch-all
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^(.*)$ index.html [QSA,L]

@@ -25,7 +25,7 @@ function App() {
     setActivationMessage(null)
 
     try {
-      const response = await fetch('api/generate.php', {
+      const response = await fetch('api/generateqr', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ function App() {
     setActivationMessage(null)
 
     try {
-      const response = await fetch('api/activate.php', {
+      const response = await fetch('api/activate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -251,7 +251,7 @@ function App() {
               <div className="space-y-2">
                 <h3 className="font-semibold text-purple-300">Endpoint</h3>
                 <code className="block p-3 bg-black/40 rounded-lg text-sm text-green-300 font-mono border border-white/5">
-                  POST /api/generate.php
+                  POST {window.location.origin}/api/generateqr
                 </code>
               </div>
 
@@ -284,12 +284,12 @@ function App() {
 
                 <div className="relative">
                   <pre className="p-4 bg-black/40 rounded-lg text-sm text-gray-300 font-mono overflow-x-auto border border-white/5">
-                    {activeTab === 'curl' && `curl -X POST http://yourdomain/api/generate.php \\
+                    {activeTab === 'curl' && `curl -X POST ${window.location.origin}/api/generateqr \\
   -H "Content-Type: application/json" \\
   -d '{"text": "Hello World", "format": "image", "scale": ${scale}, "quietzoneSize": ${quietzoneSize}}'`}
 
                     {activeTab === 'react' && `const generateQR = async () => {
-  const response = await fetch('http://yourdomain/api/generate.php', {
+  const response = await fetch('${window.location.origin}/api/generateqr', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -312,7 +312,7 @@ $payload = json_encode([
     'quietzoneSize' => ${quietzoneSize}
 ]);
 
-$ch = curl_init('http://yourdomain/api/generate.php');
+$ch = curl_init('${window.location.origin}/api/generateqr');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 curl_setopt($ch, CURLOPT_POST, true);
@@ -342,7 +342,7 @@ class Program
         var json = "{\\"text\\":\\"Hello World\\",\\"format\\":\\"base64\\",\\"scale\\":${scale},\\"quietzoneSize\\":${quietzoneSize}}";
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await client.PostAsync("http://yourdomain/api/generate.php", content);
+        var response = await client.PostAsync("${window.location.origin}/api/generateqr", content);
         var result = await response.Content.ReadAsStringAsync();
         
         Console.WriteLine(result);
