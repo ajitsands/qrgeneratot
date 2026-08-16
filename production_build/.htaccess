@@ -1,9 +1,9 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  # Serve index.html for all requests to support React routing (if added later)
+  RewriteBase /production_build/
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^(.*)$ /index.html [QSA,L]
+  RewriteRule ^(.*)$ index.html [QSA,L]
 </IfModule>
 
 # Ensure index.html is prioritized over index.php
