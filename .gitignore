@@ -1,0 +1,7 @@
+node_modules/
+licensing_server/
+backend/vendor/
+backend/license_data.json
+production_build/api/vendor/
+production_build/api/license_data.json
+.env
