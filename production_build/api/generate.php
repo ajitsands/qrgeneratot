@@ -23,6 +23,7 @@ require_once __DIR__ . '/LicenseManager.php';
 
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
+use chillerlan\QRCode\Output\QRGdImagePNG;
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -47,19 +48,16 @@ if (!$licenseStatus['valid']) {
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input || empty($input['text'])) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'QR code text is required']);
+    echo json_encode(['success' => false, 'message' => 'Text is required to generate QR code.']);
     exit;
 }
 
 $text = $input['text'];
 $format = $input['format'] ?? 'base64'; // 'base64' or 'image'
 
-$options = new QROptions([
-    'version'    => 5,
-    'outputType' => QRCode::OUTPUT_IMAGE_PNG,
-    'eccLevel'   => QRCode::ECC_L,
-    'imageBase64' => false
-]);
+$options = new QROptions();
+$options->outputType = QRGdImagePNG::class;
+$options->imageBase64 = ($format === 'base64');
 
 if ($format === 'base64') {
     $options->imageBase64 = true;
@@ -84,7 +82,7 @@ if ($format === 'base64') {
     // Construct public URL
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $domainName = $_SERVER['HTTP_HOST'];
-    $publicUrl = $protocol . $domainName . '/qrcode_generator/backend/public/qrcodes/' . $filename;
+    $publicUrl = $protocol . $domainName . '/api/public/qrcodes/' . $filename;
     
     echo json_encode([
         'success' => true,
