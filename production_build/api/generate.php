@@ -14,6 +14,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
+// Global error handler to always return JSON
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => "PHP Error: $errstr in $errfile on line $errline"]);
+    exit;
+});
+set_exception_handler(function($exception) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => "PHP Exception: " . $exception->getMessage()]);
+    exit;
+});
+error_reporting(0); // Suppress default HTML output
+
 // Check License first!
 $dbConfig = require __DIR__ . '/config.php';
 $licenseManager = new LicenseManager($dbConfig);

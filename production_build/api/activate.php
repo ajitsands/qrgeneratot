@@ -10,6 +10,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => "PHP Error: $errstr in $errfile on line $errline"]);
+    exit;
+});
+set_exception_handler(function($exception) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => "PHP Exception: " . $exception->getMessage()]);
+    exit;
+});
+error_reporting(0);
+
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input || empty($input['license_key'])) {
