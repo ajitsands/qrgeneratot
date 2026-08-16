@@ -1,4 +1,23 @@
 <?php
+// Global error handler to always return JSON
+error_reporting(0); // Suppress default HTML output
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => "PHP Error: $errstr in $errfile on line $errline"]);
+    exit;
+});
+set_exception_handler(function($exception) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => "PHP Exception: " . $exception->getMessage()]);
+    exit;
+});
+
+if (!file_exists(__DIR__ . '/vendor/autoload.php')) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'The vendor/autoload.php file is missing. Please make sure the vendor folder was uploaded correctly to the api folder.']);
+    exit;
+}
+
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/LicenseManager.php';
 
@@ -13,19 +32,6 @@ header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
-
-// Global error handler to always return JSON
-set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => "PHP Error: $errstr in $errfile on line $errline"]);
-    exit;
-});
-set_exception_handler(function($exception) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => "PHP Exception: " . $exception->getMessage()]);
-    exit;
-});
-error_reporting(0); // Suppress default HTML output
 
 // Check License first!
 $dbConfig = require __DIR__ . '/config.php';

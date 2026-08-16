@@ -1,15 +1,5 @@
 <?php
-require_once __DIR__ . '/LicenseManager.php';
-
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
-}
-
+error_reporting(0);
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => "PHP Error: $errstr in $errfile on line $errline"]);
@@ -20,7 +10,17 @@ set_exception_handler(function($exception) {
     echo json_encode(['success' => false, 'message' => "PHP Exception: " . $exception->getMessage()]);
     exit;
 });
-error_reporting(0);
+
+require_once __DIR__ . '/LicenseManager.php';
+
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
 
 $input = json_decode(file_get_contents('php://input'), true);
 
