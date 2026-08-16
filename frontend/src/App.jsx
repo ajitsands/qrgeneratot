@@ -4,6 +4,9 @@ import './App.css'
 function App() {
   const [text, setText] = useState('')
   const [format, setFormat] = useState('base64')
+  const [scale, setScale] = useState(5)
+  const [quietzoneSize, setQuietzoneSize] = useState(4)
+  const [activeTab, setActiveTab] = useState('curl')
   const [qrData, setQrData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -27,7 +30,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text, format }),
+        body: JSON.stringify({ text, format, scale, quietzoneSize }),
       })
 
       const data = await response.json()
@@ -139,6 +142,39 @@ function App() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-6 p-5 bg-black/20 rounded-xl border border-white/5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2 flex justify-between">
+                      <span>Resolution (Scale)</span>
+                      <span className="text-purple-400 font-bold">{scale}x</span>
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="50"
+                      value={scale}
+                      onChange={(e) => setScale(Number(e.target.value))}
+                      className="w-full accent-purple-500"
+                    />
+                    <p className="text-xs text-gray-400 mt-2">Pixels per block. Max allows up to ~2000px.</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2 flex justify-between">
+                      <span>Border Size</span>
+                      <span className="text-purple-400 font-bold">{quietzoneSize} blocks</span>
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="10"
+                      value={quietzoneSize}
+                      onChange={(e) => setQuietzoneSize(Number(e.target.value))}
+                      className="w-full accent-purple-500"
+                    />
+                    <p className="text-xs text-gray-400 mt-2">Width of the outer white margin.</p>
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   disabled={loading || !text}
@@ -214,8 +250,8 @@ function App() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <h3 className="font-semibold text-purple-300">Endpoint</h3>
-                <code className="block p-3 bg-black/40 rounded-lg text-sm text-green-300 font-mono">
-                  POST api/generate.php
+                <code className="block p-3 bg-black/40 rounded-lg text-sm text-green-300 font-mono border border-white/5">
+                  POST /api/generate.php
                 </code>
               </div>
 
@@ -223,19 +259,97 @@ function App() {
                 <h3 className="font-semibold text-purple-300">Request Body (JSON)</h3>
                 <pre className="p-4 bg-black/40 rounded-lg text-sm text-gray-300 font-mono overflow-x-auto border border-white/5">
 {`{
-  "text": "https://your-url.com",
-  "format": "base64" // or "image"
+  "text": "https://example.com",
+  "format": "base64", // or "image"
+  "scale": ${scale},
+  "quietzoneSize": ${quietzoneSize}
 }`}
                 </pre>
               </div>
 
-              <div className="space-y-2">
-                <h3 className="font-semibold text-purple-300">Example (cURL)</h3>
-                <pre className="p-4 bg-black/40 rounded-lg text-sm text-gray-300 font-mono overflow-x-auto border border-white/5">
-{`curl -X POST http://yourdomain/api/generate.php \\
+              <div className="space-y-4">
+                <div className="flex space-x-2 border-b border-white/10 pb-2 overflow-x-auto">
+                  {['curl', 'react', 'php', 'dotnet'].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                        activeTab === tab ? 'bg-purple-600 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      {tab === 'curl' ? 'cURL' : tab === 'react' ? 'React JS' : tab === 'php' ? 'PHP' : '.NET / C#'}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="relative">
+                  <pre className="p-4 bg-black/40 rounded-lg text-sm text-gray-300 font-mono overflow-x-auto border border-white/5">
+                    {activeTab === 'curl' && `curl -X POST http://yourdomain/api/generate.php \\
   -H "Content-Type: application/json" \\
-  -d '{"text": "Hello World", "format": "image"}'`}
-                </pre>
+  -d '{"text": "Hello World", "format": "image", "scale": ${scale}, "quietzoneSize": ${quietzoneSize}}'`}
+
+                    {activeTab === 'react' && `const generateQR = async () => {
+  const response = await fetch('http://yourdomain/api/generate.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: 'Hello World',
+      format: 'base64',
+      scale: ${scale},
+      quietzoneSize: ${quietzoneSize}
+    }),
+  });
+  
+  const data = await response.json();
+  console.log(data);
+};`}
+
+                    {activeTab === 'php' && `<?php
+$payload = json_encode([
+    'text' => 'Hello World',
+    'format' => 'image',
+    'scale' => ${scale},
+    'quietzoneSize' => ${quietzoneSize}
+]);
+
+$ch = curl_init('http://yourdomain/api/generate.php');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-Type: application/json',
+    'Content-Length: ' . strlen($payload)
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+$result = json_decode($response, true);
+print_r($result);
+?>`}
+
+                    {activeTab === 'dotnet' && `using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main()
+    {
+        var client = new HttpClient();
+        var json = "{\\"text\\":\\"Hello World\\",\\"format\\":\\"base64\\",\\"scale\\":${scale},\\"quietzoneSize\\":${quietzoneSize}}";
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync("http://yourdomain/api/generate.php", content);
+        var result = await response.Content.ReadAsStringAsync();
+        
+        Console.WriteLine(result);
+    }
+}`}
+                  </pre>
+                </div>
               </div>
             </div>
           </div>

@@ -54,9 +54,14 @@ if (!$input || empty($input['text'])) {
 
 $text = $input['text'];
 $format = $input['format'] ?? 'base64'; // 'base64' or 'image'
+$scale = isset($input['scale']) ? (int)$input['scale'] : 5;
+$quietzoneSize = isset($input['quietzoneSize']) ? (int)$input['quietzoneSize'] : 4;
 
 $options = new QROptions();
 $options->outputType = QRGdImagePNG::class;
+$options->scale = max(1, min($scale, 50));
+$options->quietzoneSize = max(0, min($quietzoneSize, 75));
+$options->addQuietzone = ($options->quietzoneSize > 0);
 $options->imageBase64 = ($format === 'base64');
 
 if ($format === 'base64') {
