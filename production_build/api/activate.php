@@ -32,7 +32,11 @@ if (!$input || empty($input['license_key'])) {
 
 $licenseKey = $input['license_key'];
 $domain = $input['domain_name'] ?? $_SERVER['HTTP_HOST'];
-$ip = $input['ip_address'] ?? $_SERVER['REMOTE_ADDR'];
+
+$ip = gethostbyname($domain);
+if ($ip === $domain || $ip === '127.0.0.1' || $ip === '::1') {
+    $ip = @file_get_contents('https://api.ipify.org') ?: $_SERVER['SERVER_ADDR'];
+}
 
 $ch = curl_init('https://key.sandslab.com/public/api/activate');
 curl_setopt_array($ch, [
