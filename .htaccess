@@ -1,0 +1,7 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine on
+  
+  # Forward all requests from the root domain to the production_build folder invisibly
+  RewriteCond %{REQUEST_URI} !^/production_build/
+  RewriteRule ^(.*)$ /production_build/$1 [L]
+</IfModule>
