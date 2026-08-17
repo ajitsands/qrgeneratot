@@ -44,7 +44,10 @@ try {
             'company_name' => $user['company_name'],
             'email' => $user['email'],
             'has_license' => !empty($user['license_key']),
-            'license_key' => $user['license_key']
+            'license_key' => $user['license_key'],
+            'qr_generated_count' => (int)$user['qr_generated_count'],
+            'qr_limit' => (int)$user['qr_limit'],
+            'is_admin' => (bool)$user['is_admin']
         ]
     ]);
 } catch (Exception $e) {
