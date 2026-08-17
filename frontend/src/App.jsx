@@ -196,9 +196,37 @@ function App() {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
+      setToast({ message: 'Downloaded Successfully!', type: 'success' });
     } catch (err) {
       console.error('Failed to download QR code', err);
       setToast({ message: 'Failed to download QR code. Please try again.', type: 'error' });
+    }
+  };
+
+  const copyToClipboard = async (text, successMessage) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setToast({ message: successMessage, type: 'success' });
+    } catch (err) {
+      setToast({ message: 'Failed to copy to clipboard', type: 'error' });
+    }
+  };
+
+  const handleCopyBase64 = () => {
+    if (qrData?.format === 'base64') {
+      copyToClipboard(qrData.data, 'Base64 string copied!');
+    } else {
+      copyToClipboard(qrData.url, 'Image URL copied!');
+    }
+  };
+
+  const handleCopySVG = () => {
+    if (qrData?.format === 'base64' && qrData.data.includes('image/svg+xml;base64,')) {
+      const base64Content = qrData.data.split(',')[1];
+      const rawSvg = atob(base64Content);
+      copyToClipboard(rawSvg, 'Raw SVG code copied!');
+    } else {
+      setToast({ message: 'SVG code is not available for this format.', type: 'error' });
     }
   };
 
@@ -364,18 +392,47 @@ function App() {
               {error && <div className="mt-6 p-4 rounded-xl bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/50 text-red-600 dark:text-red-200">{error}</div>}
 
               {qrData && (
-                <div className="mt-8 flex flex-col items-center space-y-4 p-6 bg-gray-50 dark:bg-black/20 rounded-2xl border border-gray-200 dark:border-white/10">
-                  <h3 className="text-lg font-medium text-green-600 dark:text-green-400">Success!</h3>
-                  <div className="w-48 h-48 bg-white rounded-xl shadow-lg flex items-center justify-center p-2">
-                    <img src={qrData.format === 'base64' ? qrData.data : qrData.url} alt="QR Code" className="w-full h-full object-contain" />
+                <div className="mt-8 flex flex-col md:flex-row items-center md:items-start gap-8 p-8 bg-gray-50 dark:bg-black/20 rounded-3xl border border-gray-200 dark:border-white/10 shadow-inner">
+                  
+                  <div className="flex-1 flex flex-col space-y-4 w-full">
+                    <div>
+                      <h3 className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">Success!</h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">Your QR code has been generated. Choose an option below.</p>
+                    </div>
+                    
+                    <button
+                      onClick={downloadQR}
+                      className="w-full px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-semibold transition-colors shadow-md flex items-center justify-center"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                      Download Image
+                    </button>
+                    
+                    <button
+                      onClick={handleCopyBase64}
+                      className="w-full px-6 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-800 dark:text-white rounded-xl font-semibold transition-colors flex items-center justify-center"
+                    >
+                      <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                      {qrData.format === 'base64' ? 'Copy Base64 String' : 'Copy Image URL'}
+                    </button>
+                    
+                    {qrData.format === 'base64' && qrData.data.includes('image/svg+xml') && (
+                      <button
+                        onClick={handleCopySVG}
+                        className="w-full px-6 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-800 dark:text-white rounded-xl font-semibold transition-colors flex items-center justify-center"
+                      >
+                        <svg className="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                        Copy SVG Code
+                      </button>
+                    )}
                   </div>
-                  <button
-                    onClick={downloadQR}
-                    className="mt-4 px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-semibold transition-colors shadow-md flex items-center justify-center"
-                  >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    Download QR Code
-                  </button>
+
+                  <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
+                    <div className="w-64 h-64 bg-white rounded-2xl shadow-xl flex items-center justify-center p-3 border border-gray-100 dark:border-white/5 relative overflow-hidden group">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-blue-500/10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <img src={qrData.format === 'base64' ? qrData.data : qrData.url} alt="QR Code" className="w-full h-full object-contain" />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
