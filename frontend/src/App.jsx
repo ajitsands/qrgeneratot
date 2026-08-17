@@ -129,14 +129,24 @@ function App() {
     }
   }
 
-  const downloadQR = () => {
+  const downloadQR = async () => {
     if (!qrData) return;
-    const link = document.createElement('a');
-    link.href = qrData.format === 'base64' ? qrData.data : qrData.url;
-    link.download = 'qrcode.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const src = qrData.format === 'base64' ? qrData.data : qrData.url;
+      const response = await fetch(src);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = 'qrcode.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Failed to download QR code', err);
+      alert('Failed to download QR code. Please try again.');
+    }
   };
 
   if (loadingUser) {
