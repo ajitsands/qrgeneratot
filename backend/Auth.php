@@ -49,6 +49,13 @@ class Auth {
         try {
             $this->db->exec("ALTER TABLE users ADD COLUMN is_admin TINYINT(1) DEFAULT 0");
         } catch (PDOException $e) {}
+
+        // Fix any existing NULL values from the schema update
+        try {
+            $this->db->exec("UPDATE users SET qr_generated_count = 0 WHERE qr_generated_count IS NULL");
+            $this->db->exec("UPDATE users SET qr_limit = 0 WHERE qr_limit IS NULL");
+            $this->db->exec("UPDATE users SET is_admin = 0 WHERE is_admin IS NULL");
+        } catch (PDOException $e) {}
     }
 
     public function registerUser($data) {
@@ -201,7 +208,7 @@ class Auth {
     }
     
     public function incrementQrCount($userId) {
-        $stmt = $this->db->prepare("UPDATE users SET qr_generated_count = qr_generated_count + 1 WHERE id = ?");
+        $stmt = $this->db->prepare("UPDATE users SET qr_generated_count = COALESCE(qr_generated_count, 0) + 1 WHERE id = ?");
         $stmt->execute([$userId]);
     }
 
