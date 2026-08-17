@@ -7,6 +7,15 @@ export default function QrHistory({ targetUserId = null, onBack }) {
   const [selectedQr, setSelectedQr] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(null); // { message, idsToDelete }
+  const [toast, setToast] = useState(null); // { message, type }
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   useEffect(() => {
     fetchHistory();
@@ -72,9 +81,10 @@ export default function QrHistory({ targetUserId = null, onBack }) {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
+      setToast({ message: 'QR Code downloaded successfully!', type: 'success' });
     } catch (err) {
       console.error('Failed to download QR code', err);
-      alert('Failed to download QR code. Please try again.');
+      setToast({ message: 'Failed to download QR code. Please try again.', type: 'error' });
     }
   };
 
@@ -94,10 +104,20 @@ export default function QrHistory({ targetUserId = null, onBack }) {
     }
   };
 
-  const handleDelete = async (idsToDelete) => {
-    if (!window.confirm(`Are you sure you want to delete ${idsToDelete.length} QR code(s)?`)) return;
+  const requestDelete = (idsToDelete) => {
+    setConfirmDialog({
+      message: `Are you sure you want to delete ${idsToDelete.length} QR code(s)?`,
+      idsToDelete: idsToDelete
+    });
+  };
+
+  const executeDelete = async () => {
+    if (!confirmDialog) return;
     
+    const idsToDelete = confirmDialog.idsToDelete;
+    setConfirmDialog(null);
     setIsDeleting(true);
+    
     try {
       const response = await fetch('api/delete_history.php', {
         method: 'POST',
@@ -111,9 +131,10 @@ export default function QrHistory({ targetUserId = null, onBack }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to delete logs');
       
+      setToast({ message: 'Deleted successfully.', type: 'success' });
       fetchHistory(); // Reload history
     } catch (err) {
-      setError(err.message);
+      setToast({ message: err.message, type: 'error' });
       setIsDeleting(false); // fetchHistory will reset isDeleting via another path usually, but let's be safe
     }
   };
@@ -131,7 +152,7 @@ export default function QrHistory({ targetUserId = null, onBack }) {
           <div className="flex items-center gap-4">
             {selectedIds.length > 0 && (
               <button
-                onClick={() => handleDelete(selectedIds)}
+                onClick={() => requestDelete(selectedIds)}
                 disabled={isDeleting}
                 className="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl hover:bg-red-200 dark:hover:bg-red-800/40 transition-colors flex items-center font-medium disabled:opacity-50"
               >
@@ -210,7 +231,7 @@ export default function QrHistory({ targetUserId = null, onBack }) {
                             View
                           </button>
                           <button
-                            onClick={() => handleDelete([log.id])}
+                            onClick={() => requestDelete([log.id])}
                             disabled={isDeleting}
                             className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded shadow-sm transition-colors disabled:opacity-50"
                             title="Delete"
@@ -266,6 +287,50 @@ export default function QrHistory({ targetUserId = null, onBack }) {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Custom Confirm Modal */}
+      {confirmDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-[#1E293B] rounded-3xl max-w-sm w-full p-8 shadow-2xl relative border border-gray-200 dark:border-white/10 text-center">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Confirm Deletion</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-8">{confirmDialog.message}</p>
+            
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-white rounded-xl font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeDelete}
+                className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-semibold transition-colors shadow-lg"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notifications */}
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center p-4 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all duration-300 animate-fade-in-up ${
+          toast.type === 'success'
+            ? 'bg-green-50/90 border-green-200 text-green-800 dark:bg-green-950/80 dark:border-green-800 dark:text-green-200'
+            : 'bg-red-50/90 border-red-200 text-red-800 dark:bg-red-950/80 dark:border-red-800 dark:text-red-200'
+        }`}>
+          {toast.type === 'success' ? (
+            <svg className="w-5 h-5 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          ) : (
+            <svg className="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          )}
+          <span className="text-sm font-semibold">{toast.message}</span>
         </div>
       )}
     </div>
