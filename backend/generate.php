@@ -83,6 +83,18 @@ if ($isApiAccess) {
         echo json_encode(['success' => false, 'message' => 'License verification failed: ' . $licenseStatus['message']]);
         exit;
     }
+
+    // Strictly check if the caller IP matches the user's registered IP or domain IP
+    $callerIp = $_SERVER['REMOTE_ADDR'];
+    $registeredIp = $user['domain_ip'];
+    $registeredDomain = $user['domain_name'];
+    $resolvedIp = gethostbyname($registeredDomain);
+
+    if ($callerIp !== $registeredIp && $callerIp !== $resolvedIp) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => "API call unauthorized. Request came from IP: $callerIp, but license is registered to IP: $registeredIp and Domain: $registeredDomain (Resolved: $resolvedIp)."]);
+        exit;
+    }
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
