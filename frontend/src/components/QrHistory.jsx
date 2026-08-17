@@ -5,6 +5,8 @@ export default function QrHistory({ targetUserId = null, onBack }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedQr, setSelectedQr] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchHistory();
@@ -32,6 +34,7 @@ export default function QrHistory({ targetUserId = null, onBack }) {
       setError(err.message);
     } finally {
       setLoading(false);
+      setSelectedIds([]); // Clear selection when history reloads
     }
   };
 
@@ -75,6 +78,46 @@ export default function QrHistory({ targetUserId = null, onBack }) {
     }
   };
 
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(logs.map(log => log.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (id) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  const handleDelete = async (idsToDelete) => {
+    if (!window.confirm(`Are you sure you want to delete ${idsToDelete.length} QR code(s)?`)) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch('api/delete_history.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('qr_token')}`
+        },
+        body: JSON.stringify({ ids: idsToDelete })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to delete logs');
+      
+      fetchHistory(); // Reload history
+    } catch (err) {
+      setError(err.message);
+      setIsDeleting(false); // fetchHistory will reset isDeleting via another path usually, but let's be safe
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-[#0F172A] dark:to-purple-950 text-gray-900 dark:text-white p-8 transition-colors duration-300">
       <div className="max-w-[95%] mx-auto">
@@ -85,12 +128,24 @@ export default function QrHistory({ targetUserId = null, onBack }) {
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">History of generated QR codes</p>
           </div>
-          <button
-            onClick={onBack}
-            className="px-4 py-2 bg-gray-200 dark:bg-white/10 text-gray-800 dark:text-white rounded-xl hover:bg-gray-300 dark:hover:bg-white/20 transition-colors"
-          >
-            Back
-          </button>
+          <div className="flex items-center gap-4">
+            {selectedIds.length > 0 && (
+              <button
+                onClick={() => handleDelete(selectedIds)}
+                disabled={isDeleting}
+                className="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl hover:bg-red-200 dark:hover:bg-red-800/40 transition-colors flex items-center font-medium disabled:opacity-50"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                Delete Selected ({selectedIds.length})
+              </button>
+            )}
+            <button
+              onClick={onBack}
+              className="px-4 py-2 bg-gray-200 dark:bg-white/10 text-gray-800 dark:text-white rounded-xl hover:bg-gray-300 dark:hover:bg-white/20 transition-colors"
+            >
+              Back
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -107,6 +162,14 @@ export default function QrHistory({ targetUserId = null, onBack }) {
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-gray-50 dark:bg-black/20 text-gray-600 dark:text-gray-300">
                   <tr>
+                    <th className="px-6 py-4 w-12 text-center">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 bg-white dark:bg-black/40"
+                        onChange={handleSelectAll}
+                        checked={logs.length > 0 && selectedIds.length === logs.length}
+                      />
+                    </th>
                     {targetUserId && <th className="px-6 py-4 font-semibold">User</th>}
                     <th className="px-6 py-4 font-semibold">Date & Time</th>
                     <th className="px-6 py-4 font-semibold">Data / URL</th>
@@ -116,7 +179,15 @@ export default function QrHistory({ targetUserId = null, onBack }) {
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-white/10">
                   {logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                    <tr key={log.id} className={`hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${selectedIds.includes(log.id) ? 'bg-purple-50/50 dark:bg-purple-900/10' : ''}`}>
+                      <td className="px-6 py-4 text-center">
+                        <input 
+                          type="checkbox" 
+                          className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 bg-white dark:bg-black/40"
+                          checked={selectedIds.includes(log.id)}
+                          onChange={() => handleSelectOne(log.id)}
+                        />
+                      </td>
                       {targetUserId && (
                         <td className="px-6 py-4">
                           <div className="font-medium text-gray-900 dark:text-white">{log.company_name}</div>
@@ -131,18 +202,28 @@ export default function QrHistory({ targetUserId = null, onBack }) {
                       </td>
                       <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{log.format}</td>
                       <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() => setSelectedQr(log)}
-                          className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded shadow transition-colors text-xs font-medium"
-                        >
-                          View
-                        </button>
+                        <div className="flex items-center justify-center space-x-2">
+                          <button
+                            onClick={() => setSelectedQr(log)}
+                            className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/40 dark:hover:bg-purple-800/60 text-purple-700 dark:text-purple-300 rounded shadow-sm transition-colors text-xs font-medium"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => handleDelete([log.id])}
+                            disabled={isDeleting}
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded shadow-sm transition-colors disabled:opacity-50"
+                            title="Delete"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                   {logs.length === 0 && (
                     <tr>
-                      <td colSpan={targetUserId ? "5" : "4"} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                      <td colSpan={targetUserId ? "6" : "5"} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                         No QR codes generated yet.
                       </td>
                     </tr>
