@@ -51,12 +51,15 @@ if (!$input || empty($input['license_key'])) {
 }
 
 $licenseKey = $input['license_key'];
-$domain = $input['domain_name'] ?? $_SERVER['HTTP_HOST'];
-
-$ip = gethostbyname($domain);
-if ($ip === $domain || $ip === '127.0.0.1' || $ip === '::1') {
-    $ip = @file_get_contents('https://api.ipify.org') ?: $_SERVER['SERVER_ADDR'];
+$user = $auth->getUserById($payload['user_id']);
+if (!$user) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'User not found']);
+    exit;
 }
+
+$domain = $user['domain_name'];
+$ip = $user['domain_ip'];
 
 $ch = curl_init('https://key.sandslab.com/public/api/activate');
 curl_setopt_array($ch, [
