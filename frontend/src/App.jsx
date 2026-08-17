@@ -193,7 +193,11 @@ function App() {
               <div className="text-sm font-medium">{user.company_name}</div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 Generated: <span className="font-semibold text-purple-600 dark:text-purple-400">{user.qr_generated_count || 0}</span>
-                {user.qr_limit > 0 ? ` / ${user.qr_limit}` : ' (Unlimited)'}
+                {user.has_license ? (
+                  user.qr_limit > 0 ? ` / ${user.qr_limit}` : ' (Unlimited)'
+                ) : (
+                  ` / ${user.qr_limit || 100} (Demo Mode)`
+                )}
               </div>
             </div>
             
@@ -215,7 +219,7 @@ function App() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-8">
-            <div className={`bg-white dark:bg-white/5 rounded-3xl p-8 border border-gray-200 dark:border-white/10 shadow-xl backdrop-blur-xl transition-all ${!user.has_license ? 'opacity-50 pointer-events-none filter blur-[2px]' : ''}`}>
+            <div className="bg-white dark:bg-white/5 rounded-3xl p-8 border border-gray-200 dark:border-white/10 shadow-xl backdrop-blur-xl transition-all">
               <form onSubmit={generateQR} className="space-y-6">
                 <div>
                   <label className="block text-sm font-semibold mb-2 text-purple-700 dark:text-purple-200">Data / URL</label>
