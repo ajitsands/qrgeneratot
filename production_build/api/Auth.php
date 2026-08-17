@@ -56,6 +56,20 @@ class Auth {
             $this->db->exec("UPDATE users SET qr_limit = 0 WHERE qr_limit IS NULL");
             $this->db->exec("UPDATE users SET is_admin = 0 WHERE is_admin IS NULL");
         } catch (PDOException $e) {}
+
+        // Create qr_logs table
+        $sqlLogs = "CREATE TABLE IF NOT EXISTS qr_logs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            qr_text TEXT NOT NULL,
+            qr_result LONGTEXT NOT NULL,
+            format VARCHAR(50) NOT NULL,
+            scale INT NOT NULL,
+            quietzone INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )";
+        $this->db->exec($sqlLogs);
     }
 
     public function registerUser($data) {
@@ -221,5 +235,37 @@ class Auth {
     public function updateUserLimit($userId, $limit) {
         $stmt = $this->db->prepare("UPDATE users SET qr_limit = ? WHERE id = ?");
         $stmt->execute([(int)$limit, $userId]);
+    }
+
+    public function logQrCode($userId, $text, $result, $format, $scale, $quietzone) {
+        $stmt = $this->db->prepare("INSERT INTO qr_logs (user_id, qr_text, qr_result, format, scale, quietzone) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$userId, $text, $result, $format, $scale, $quietzone]);
+    }
+
+    public function getUserQrLogs($userId) {
+        $stmt = $this->db->prepare("SELECT * FROM qr_logs WHERE user_id = ? ORDER BY created_at DESC");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getAllQrLogs($userId = null) {
+        if ($userId) {
+            $stmt = $this->db->prepare("
+                SELECT q.*, u.email, u.company_name 
+                FROM qr_logs q 
+                JOIN users u ON q.user_id = u.id 
+                WHERE q.user_id = ? 
+                ORDER BY q.created_at DESC
+            ");
+            $stmt->execute([$userId]);
+        } else {
+            $stmt = $this->db->query("
+                SELECT q.*, u.email, u.company_name 
+                FROM qr_logs q 
+                JOIN users u ON q.user_id = u.id 
+                ORDER BY q.created_at DESC
+            ");
+        }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
