@@ -13,3 +13,8 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Custom CSS filter to invert white text to black while preserving green brand colors */
+.logo-invert {
+  filter: invert(1) hue-rotate(180deg);
+}

@@ -189,7 +189,8 @@ function App() {
       <div className="max-w-6xl mx-auto">
         <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
           <div className="text-center md:text-left flex flex-col md:flex-row items-center gap-4">
-            <img src="https://home.sandslab.com/logo/logo_white.png" alt="SaNDS Lab Logo" className="h-16 drop-shadow-md" />
+            <img src="https://home.sandslab.com/logo/logo_white.png" alt="SaNDS Lab Logo" className="h-16 hidden dark:block drop-shadow-md" />
+            <img src="https://home.sandslab.com/logo/logo_white.png" alt="SaNDS Lab Logo" className="h-16 block dark:hidden drop-shadow-md logo-invert" />
             <div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 drop-shadow-sm transition-colors">
                 SaNDS Lab QR
