@@ -4,6 +4,7 @@ export default function AdminPanel({ onBack }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -38,10 +39,13 @@ export default function AdminPanel({ onBack }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to update limit');
-      alert('Limit updated successfully!');
+      setSuccess('Limit updated successfully!');
+      setError(null);
+      setTimeout(() => setSuccess(null), 4000);
       fetchUsers(); // Refresh list
     } catch (err) {
-      alert('Error updating limit: ' + err.message);
+      setError('Error updating limit: ' + err.message);
+      setSuccess(null);
     }
   };
 
@@ -63,8 +67,14 @@ export default function AdminPanel({ onBack }) {
           </button>
         </div>
 
+        {success && (
+          <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl mb-6 transition-all duration-300">
+            {success}
+          </div>
+        )}
+
         {error && (
-          <div className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl mb-6">
+          <div className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl mb-6 transition-all duration-300">
             {error}
           </div>
         )}

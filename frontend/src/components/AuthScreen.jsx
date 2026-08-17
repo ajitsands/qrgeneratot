@@ -5,6 +5,7 @@ export default function AuthScreen({ onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   
   // Registration fields
   const [formData, setFormData] = useState({
@@ -56,10 +57,11 @@ export default function AuthScreen({ onLoginSuccess }) {
         // Registration success
         setIsLogin(true);
         setError(null);
-        alert('Registration successful! Please log in.');
+        setSuccessMessage('Registration successful! Please log in.');
       }
     } catch (err) {
       setError(err.message);
+      setSuccessMessage(null);
     } finally {
       setLoading(false);
     }
@@ -99,6 +101,7 @@ export default function AuthScreen({ onLoginSuccess }) {
           <input type="email" name="email" required placeholder="Email Address (Username)" value={formData.email} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-black/30 border border-gray-300 dark:border-purple-500/30 focus:border-purple-500 focus:outline-none transition-colors dark:text-white text-gray-900" />
           <input type="password" name="password" required placeholder="Password" value={formData.password} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-black/30 border border-gray-300 dark:border-purple-500/30 focus:border-purple-500 focus:outline-none transition-colors dark:text-white text-gray-900" />
 
+          {successMessage && <div className="p-3 bg-green-100 dark:bg-green-500/20 border border-green-300 dark:border-green-500/50 rounded-lg text-green-700 dark:text-green-200 text-sm text-center transition-colors">{successMessage}</div>}
           {error && <div className="p-3 bg-red-100 dark:bg-red-500/20 border border-red-300 dark:border-red-500/50 rounded-lg text-red-700 dark:text-red-200 text-sm text-center transition-colors">{error}</div>}
 
           {!isLogin && (
@@ -113,7 +116,7 @@ export default function AuthScreen({ onLoginSuccess }) {
         </form>
 
         <div className="mt-6 text-center">
-          <button onClick={() => { setIsLogin(!isLogin); setError(null); }} className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors">
+          <button onClick={() => { setIsLogin(!isLogin); setError(null); setSuccessMessage(null); }} className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors">
             {isLogin ? "Don't have an account? Register" : 'Already have an account? Sign In'}
           </button>
         </div>

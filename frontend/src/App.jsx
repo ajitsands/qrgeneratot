@@ -22,6 +22,16 @@ function App() {
   const [licenseKey, setLicenseKey] = useState('')
   const [activationLoading, setActivationLoading] = useState(false)
   const [activationMessage, setActivationMessage] = useState(null)
+  
+  // Toast Notification State
+  const [toast, setToast] = useState(null) // { message: '', type: 'success' | 'error' }
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   useEffect(() => {
     checkAuth()
@@ -151,7 +161,7 @@ function App() {
       URL.revokeObjectURL(blobUrl);
     } catch (err) {
       console.error('Failed to download QR code', err);
-      alert('Failed to download QR code. Please try again.');
+      setToast({ message: 'Failed to download QR code. Please try again.', type: 'error' });
     }
   };
 
@@ -459,6 +469,21 @@ class Program
       </div>
       
       <Footer />
+
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center p-4 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all duration-300 animate-fade-in-up ${
+          toast.type === 'success'
+            ? 'bg-green-50/90 border-green-200 text-green-800 dark:bg-green-950/80 dark:border-green-800 dark:text-green-200'
+            : 'bg-red-50/90 border-red-200 text-red-800 dark:bg-red-950/80 dark:border-red-800 dark:text-red-200'
+        }`}>
+          {toast.type === 'success' ? (
+            <svg className="w-5 h-5 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          ) : (
+            <svg className="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          )}
+          <span className="text-sm font-semibold">{toast.message}</span>
+        </div>
+      )}
     </div>
   )
 }
