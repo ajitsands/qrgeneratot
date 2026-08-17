@@ -35,7 +35,14 @@ export default function AuthScreen({ onLoginSuccess }) {
         body: JSON.stringify(isLogin ? { email: formData.email, password: formData.password } : formData),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        const text = await response.text();
+        console.error('Raw response:', text);
+        throw new Error(`Server returned invalid response: ${text.substring(0, 100)}...`);
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Authentication failed');
