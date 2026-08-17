@@ -26,6 +26,7 @@ require_once __DIR__ . '/LicenseManager.php';
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 use chillerlan\QRCode\Output\QRGdImagePNG;
+use chillerlan\QRCode\Data\QRMatrix;
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -118,6 +119,7 @@ $text = $input['text'];
 $format = $input['format'] ?? 'base64'; // 'base64' or 'image'
 $scale = isset($input['scale']) ? (int)$input['scale'] : 5;
 $quietzoneSize = isset($input['quietzoneSize']) ? (int)$input['quietzoneSize'] : 4;
+$dotStyle = $input['dotStyle'] ?? 'square';
 
 $options = new QROptions();
 $options->outputType = QRGdImagePNG::class;
@@ -125,6 +127,18 @@ $options->scale = max(1, min($scale, 50));
 $options->quietzoneSize = max(0, min($quietzoneSize, 75));
 $options->addQuietzone = ($options->quietzoneSize > 0);
 $options->imageBase64 = ($format === 'base64');
+
+if ($dotStyle === 'round') {
+    $options->drawCircularModules = true;
+    $options->circleRadius = 0.45;
+    $options->keepAsSquare = [
+        QRMatrix::M_FINDER | QRMatrix::IS_DARK,
+        QRMatrix::M_FINDER,
+        QRMatrix::M_FINDER_DOT | QRMatrix::IS_DARK,
+        QRMatrix::M_ALIGNMENT | QRMatrix::IS_DARK,
+        QRMatrix::M_ALIGNMENT
+    ];
+}
 
 if ($format === 'base64') {
     $options->imageBase64 = true;
