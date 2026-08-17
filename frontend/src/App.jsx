@@ -43,6 +43,11 @@ function App() {
     checkAuth()
   }, [])
 
+  // Clear generated QR when settings change
+  useEffect(() => {
+    setQrData(null)
+  }, [text, format, scale, quietzoneSize, dotStyle])
+
   useEffect(() => {
     if (user) {
       loadStylePreview()
@@ -348,9 +353,11 @@ function App() {
               </form>
 
               {!qrData && stylePreview && (
-                <div className="mt-8 flex flex-col items-center p-6 bg-gray-50 dark:bg-black/20 rounded-2xl border border-gray-200 dark:border-white/10 opacity-70">
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">Style Preview (Demo)</h3>
-                  <img src={stylePreview} alt="QR Style Preview" className="w-40 h-40 rounded-lg shadow-sm filter grayscale-[20%]" />
+                <div className="mt-8 flex flex-col items-center p-6 bg-gray-50 dark:bg-black/20 rounded-2xl border border-gray-200 dark:border-white/10">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">Style Demo</h3>
+                  <div className="w-40 h-40 bg-white rounded-xl shadow-inner flex items-center justify-center p-2">
+                    <img src={stylePreview} alt="QR Style Preview" className="w-full h-full object-contain filter grayscale-[10%] opacity-90" />
+                  </div>
                 </div>
               )}
 
@@ -359,7 +366,9 @@ function App() {
               {qrData && (
                 <div className="mt-8 flex flex-col items-center space-y-4 p-6 bg-gray-50 dark:bg-black/20 rounded-2xl border border-gray-200 dark:border-white/10">
                   <h3 className="text-lg font-medium text-green-600 dark:text-green-400">Success!</h3>
-                  <img src={qrData.format === 'base64' ? qrData.data : qrData.url} alt="QR Code" className="w-48 h-48 rounded-lg shadow-lg" />
+                  <div className="w-48 h-48 bg-white rounded-xl shadow-lg flex items-center justify-center p-2">
+                    <img src={qrData.format === 'base64' ? qrData.data : qrData.url} alt="QR Code" className="w-full h-full object-contain" />
+                  </div>
                   <button
                     onClick={downloadQR}
                     className="mt-4 px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-semibold transition-colors shadow-md flex items-center justify-center"
