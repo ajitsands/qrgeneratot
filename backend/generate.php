@@ -131,6 +131,7 @@ if ($format === 'base64') {
     $qrcode = (new QRCode($options))->render($text);
     
     $auth->incrementQrCount($user['id']);
+    $auth->logQrCode($user['id'], $text, $qrcode, 'base64', $options->scale, $options->quietzoneSize);
     
     echo json_encode([
         'success' => true,
@@ -157,6 +158,8 @@ if ($format === 'base64') {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $domainName = $_SERVER['HTTP_HOST'];
     $publicUrl = $protocol . $domainName . '/api/public/qrcodes/' . $filename;
+    
+    $auth->logQrCode($user['id'], $text, $publicUrl, 'image', $options->scale, $options->quietzoneSize);
     
     echo json_encode([
         'success' => true,

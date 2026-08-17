@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import QrHistory from './QrHistory';
 
 export default function AdminPanel({ onBack }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [selectedHistoryUser, setSelectedHistoryUser] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -49,6 +51,10 @@ export default function AdminPanel({ onBack }) {
     }
   };
 
+  if (selectedHistoryUser) {
+    return <QrHistory targetUserId={selectedHistoryUser} onBack={() => setSelectedHistoryUser(null)} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0F172A] text-gray-900 dark:text-white p-8 transition-colors duration-300">
       <div className="max-w-6xl mx-auto">
@@ -59,12 +65,20 @@ export default function AdminPanel({ onBack }) {
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">Manage Users & QR Code Limits</p>
           </div>
-          <button
-            onClick={onBack}
-            className="px-4 py-2 bg-gray-200 dark:bg-white/10 text-gray-800 dark:text-white rounded-xl hover:bg-gray-300 dark:hover:bg-white/20 transition-colors"
-          >
-            Back to Dashboard
-          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setSelectedHistoryUser('all')}
+              className="px-4 py-2 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded-xl hover:bg-purple-200 dark:hover:bg-purple-800/60 transition-colors"
+            >
+              All Users QR History
+            </button>
+            <button
+              onClick={onBack}
+              className="px-4 py-2 bg-gray-200 dark:bg-white/10 text-gray-800 dark:text-white rounded-xl hover:bg-gray-300 dark:hover:bg-white/20 transition-colors"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </div>
 
         {success && (
@@ -119,15 +133,23 @@ export default function AdminPanel({ onBack }) {
                         />
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() => {
-                            const val = document.getElementById(`limit-${user.id}`).value;
-                            updateLimit(user.id, val ? parseInt(val, 10) : 0);
-                          }}
-                          className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded shadow transition-colors text-xs font-medium"
-                        >
-                          Save
-                        </button>
+                        <div className="flex justify-center space-x-2">
+                          <button
+                            onClick={() => {
+                              const val = document.getElementById(`limit-${user.id}`).value;
+                              updateLimit(user.id, val ? parseInt(val, 10) : 0);
+                            }}
+                            className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded shadow transition-colors text-xs font-medium"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setSelectedHistoryUser(user.id)}
+                            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded shadow transition-colors text-xs font-medium"
+                          >
+                            History
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
