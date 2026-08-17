@@ -69,7 +69,7 @@ export default function AuthScreen({ onLoginSuccess }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:bg-[#0F172A] p-4 transition-colors duration-300 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-[#0F172A] dark:to-purple-950 p-4 transition-colors duration-300 relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="w-full max-w-md bg-white dark:bg-white/5 rounded-3xl p-8 border border-gray-200 dark:border-white/10 shadow-2xl backdrop-blur-xl transition-colors duration-300">
         
