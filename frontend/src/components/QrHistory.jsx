@@ -77,7 +77,7 @@ export default function QrHistory({ targetUserId = null, onBack }) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0F172A] text-gray-900 dark:text-white p-8 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-[95%] mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400">

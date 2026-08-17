@@ -193,7 +193,7 @@ function App() {
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-200 dark:bg-blue-600/20 rounded-full blur-[120px] transition-colors"></div>
       </div>
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-[95%] mx-auto">
         <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
           <div className="text-center md:text-left flex flex-col md:flex-row items-center gap-4">
             <img src={AppLogo} alt="SaNDS Lab Logo" className="h-16 drop-shadow-md" />
