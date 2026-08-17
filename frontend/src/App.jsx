@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import AuthScreen from './components/AuthScreen'
 import AdminPanel from './components/AdminPanel'
+import Footer from './components/Footer'
 import './App.css'
 
 function App() {
@@ -150,12 +151,16 @@ function App() {
       </div>
 
       <div className="max-w-6xl mx-auto">
-        <header className="flex justify-between items-center mb-12">
-          <div className="text-center md:text-left">
-            <h1 className="text-5xl font-extrabold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 drop-shadow-sm transition-colors">
-              SaNDS Lab QR Generator
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-lg transition-colors">Create stunning QR codes instantly via Web or API</p>
+        <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+          <div className="text-center md:text-left flex flex-col md:flex-row items-center gap-4">
+            <img src="https://home.sandslab.com/logo/logo_white.png" alt="SaNDS Lab Logo" className="h-16 hidden dark:block drop-shadow-md" />
+            <img src="https://home.sandslab.com/logo/logo_white.png" alt="SaNDS Lab Logo" className="h-16 block dark:hidden drop-shadow-md invert opacity-80" />
+            <div>
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 drop-shadow-sm transition-colors">
+                SaNDS Lab QR
+              </h1>
+              <p className="text-gray-500 dark:text-gray-400 text-lg transition-colors">Create stunning QR codes instantly</p>
+            </div>
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-right hidden md:block border-r border-gray-200 dark:border-white/10 pr-4 mr-2">
@@ -415,6 +420,8 @@ class Program
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   )
 }

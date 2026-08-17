@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Footer from './Footer';
 
 export default function AuthScreen({ onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -69,10 +70,9 @@ export default function AuthScreen({ onLoginSuccess }) {
       <div className="w-full max-w-md bg-white dark:bg-white/5 rounded-3xl p-8 border border-gray-200 dark:border-white/10 shadow-2xl backdrop-blur-xl transition-colors duration-300">
         
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-500/20 mb-4 transition-colors">
-            <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+          <div className="flex justify-center mb-6">
+            <img src="https://home.sandslab.com/logo/logo_white.png" alt="SaNDS Lab Logo" className="h-16 hidden dark:block drop-shadow-md" />
+            <img src="https://home.sandslab.com/logo/logo_white.png" alt="SaNDS Lab Logo" className="h-16 block dark:hidden drop-shadow-md invert opacity-80" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
           <p className="text-gray-500 dark:text-gray-400 text-sm transition-colors">
@@ -119,6 +119,8 @@ export default function AuthScreen({ onLoginSuccess }) {
         </div>
 
       </div>
+      
+      <Footer />
     </div>
   );
 }
