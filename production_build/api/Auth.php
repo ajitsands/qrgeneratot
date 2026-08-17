@@ -269,15 +269,19 @@ class Auth {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function deleteQrLogs($userId, $logIds) {
+    public function deleteQrLogs($userId, $logIds, $isAdmin = false) {
         if (empty($logIds)) return;
         
         $placeholders = implode(',', array_fill(0, count($logIds), '?'));
         
-        $params = $logIds;
-        $params[] = $userId; // add userId to the end of the array
-        
-        $stmt = $this->db->prepare("DELETE FROM qr_logs WHERE id IN ($placeholders) AND user_id = ?");
-        $stmt->execute($params);
+        if ($isAdmin) {
+            $stmt = $this->db->prepare("DELETE FROM qr_logs WHERE id IN ($placeholders)");
+            $stmt->execute($logIds);
+        } else {
+            $params = $logIds;
+            $params[] = $userId; // add userId to the end of the array
+            $stmt = $this->db->prepare("DELETE FROM qr_logs WHERE id IN ($placeholders) AND user_id = ?");
+            $stmt->execute($params);
+        }
     }
 }

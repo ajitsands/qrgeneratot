@@ -56,6 +56,7 @@ if (empty($ids)) {
     exit;
 }
 
-$auth->deleteQrLogs($user['id'], $ids);
+$isAdmin = !empty($user['is_admin']);
+$auth->deleteQrLogs($user['id'], $ids, $isAdmin);
 
 echo json_encode(['success' => true, 'message' => 'Logs deleted successfully.']);
