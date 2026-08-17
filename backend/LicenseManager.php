@@ -71,10 +71,10 @@ class LicenseManager {
         if (!$data || empty($data['token']) || empty($data['public_key'])) {
             return ['valid' => false, 'message' => 'No license installed.'];
         }
+        return $this->verifyLicenseDataLocally($data['token'], $data['public_key']);
+    }
 
-        $token = $data['token'];
-        $publicKey = $data['public_key'];
-
+    public function verifyLicenseDataLocally($token, $publicKey) {
         $parts = explode('.', $token);
         if (count($parts) !== 2) return ['valid' => false, 'message' => 'Invalid token format.'];
         
