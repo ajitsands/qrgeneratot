@@ -16,7 +16,7 @@ require_once __DIR__ . '/Auth.php';
 
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
-use chillerlan\QRCode\Output\QRGdImagePNG;
+use chillerlan\QRCode\Output\QRMarkupSVG;
 use chillerlan\QRCode\Data\QRMatrix;
 
 header('Content-Type: application/json');
@@ -55,7 +55,7 @@ $text = "https://www.sandslab.com";
 $dotStyle = $input['dotStyle'] ?? 'square'; // 'square' or 'round'
 
 $options = new QROptions();
-$options->outputType = QRGdImagePNG::class;
+$options->outputType = QRMarkupSVG::class;
 $options->scale = 5;
 $options->quietzoneSize = 4;
 $options->addQuietzone = true;

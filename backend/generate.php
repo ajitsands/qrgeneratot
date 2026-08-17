@@ -25,7 +25,7 @@ require_once __DIR__ . '/LicenseManager.php';
 
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
-use chillerlan\QRCode\Output\QRGdImagePNG;
+use chillerlan\QRCode\Output\QRMarkupSVG;
 use chillerlan\QRCode\Data\QRMatrix;
 
 header('Content-Type: application/json');
@@ -122,7 +122,7 @@ $quietzoneSize = isset($input['quietzoneSize']) ? (int)$input['quietzoneSize'] :
 $dotStyle = $input['dotStyle'] ?? 'square';
 
 $options = new QROptions();
-$options->outputType = QRGdImagePNG::class;
+$options->outputType = QRMarkupSVG::class;
 $options->scale = max(1, min($scale, 50));
 $options->quietzoneSize = max(0, min($quietzoneSize, 75));
 $options->addQuietzone = ($options->quietzoneSize > 0);
@@ -161,10 +161,12 @@ if ($format === 'base64') {
         mkdir($tempDir, 0777, true);
     }
     
-    $filename = md5($text . time()) . '.png';
+    $filename = md5($text . time()) . '.svg';
     $filepath = $tempDir . '/' . $filename;
     
-    (new QRCode($options))->render($text, $filepath);
+    $options->imageBase64 = false;
+    $qrcodeContent = (new QRCode($options))->render($text);
+    file_put_contents($filepath, $qrcodeContent);
     
     $auth->incrementQrCount($user['id']);
     
