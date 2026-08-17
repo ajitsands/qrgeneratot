@@ -10,7 +10,7 @@ export default function AuthScreen({ onLoginSuccess }) {
     company_name: '',
     email: '',
     password: '',
-    domain_name: window.location.hostname,
+    domain_name: '',
     domain_ip: '',
     contact_name: '',
     mobile: '',
@@ -86,7 +86,12 @@ export default function AuthScreen({ onLoginSuccess }) {
               <input type="text" name="company_name" required placeholder="Company Name" value={formData.company_name} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-black/30 border border-gray-300 dark:border-purple-500/30 focus:border-purple-500 focus:outline-none transition-colors dark:text-white text-gray-900" />
               <input type="text" name="contact_name" required placeholder="Contact Person Name" value={formData.contact_name} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-black/30 border border-gray-300 dark:border-purple-500/30 focus:border-purple-500 focus:outline-none transition-colors dark:text-white text-gray-900" />
               <input type="tel" name="mobile" required placeholder="Mobile Number" value={formData.mobile} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-black/30 border border-gray-300 dark:border-purple-500/30 focus:border-purple-500 focus:outline-none transition-colors dark:text-white text-gray-900" />
-              <input type="text" name="domain_name" required placeholder="Domain Name" value={formData.domain_name} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-black/30 border border-gray-300 dark:border-purple-500/30 focus:border-purple-500 focus:outline-none transition-colors dark:text-white text-gray-900" />
+              
+              <div>
+                <input type="text" name="domain_name" required placeholder="Domain Name (e.g. yourwebsite.com)" value={formData.domain_name} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-black/30 border border-gray-300 dark:border-purple-500/30 focus:border-purple-500 focus:outline-none transition-colors dark:text-white text-gray-900" />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-2">Domain name is required to generate the Application Key.</p>
+              </div>
+
               <input type="text" name="domain_ip" required placeholder="Domain IP (Optional)" value={formData.domain_ip} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-black/30 border border-gray-300 dark:border-purple-500/30 focus:border-purple-500 focus:outline-none transition-colors dark:text-white text-gray-900" />
             </>
           )}
