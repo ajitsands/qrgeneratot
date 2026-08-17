@@ -17,10 +17,12 @@ function App() {
   const [format, setFormat] = useState('base64')
   const [scale, setScale] = useState(5)
   const [quietzoneSize, setQuietzoneSize] = useState(4)
+  const [dotStyle, setDotStyle] = useState('square')
   const [activeTab, setActiveTab] = useState('curl')
   const [qrData, setQrData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [stylePreview, setStylePreview] = useState(null)
   
   // Activation State
   const [licenseKey, setLicenseKey] = useState('')
@@ -40,6 +42,32 @@ function App() {
   useEffect(() => {
     checkAuth()
   }, [])
+
+  useEffect(() => {
+    if (user) {
+      loadStylePreview()
+    }
+  }, [dotStyle, user])
+
+  const loadStylePreview = async () => {
+    try {
+      const token = localStorage.getItem('qr_token')
+      const response = await fetch('api/preview.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ dotStyle }),
+      })
+      const data = await response.json()
+      if (response.ok && data.success) {
+        setStylePreview(data.data)
+      }
+    } catch (err) {
+      console.error("Failed to load style preview", err)
+    }
+  }
 
   const checkAuth = async () => {
     const token = localStorage.getItem('qr_token')
@@ -86,7 +114,7 @@ function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ text, format, scale, quietzoneSize }),
+        body: JSON.stringify({ text, format, scale, quietzoneSize, dotStyle }),
       })
 
       const data = await response.json()
@@ -268,6 +296,20 @@ function App() {
                     </select>
                   </div>
                   <div>
+                    <label className="block text-sm font-semibold mb-2 text-purple-700 dark:text-purple-200">Pattern Style</label>
+                    <select
+                      value={dotStyle}
+                      onChange={(e) => setDotStyle(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-300 dark:border-white/10 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 transition-all dark:text-white text-gray-900 appearance-none"
+                    >
+                      <option value="square">Classic Squares</option>
+                      <option value="round">Rounded Dots</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <label className="block text-sm font-semibold mb-2 text-purple-700 dark:text-purple-200">Border Size: {quietzoneSize}</label>
                     <input
                       type="range"
@@ -304,6 +346,13 @@ function App() {
                   {loading ? 'Generating...' : 'Generate QR Code'}
                 </button>
               </form>
+
+              {!qrData && stylePreview && (
+                <div className="mt-8 flex flex-col items-center p-6 bg-gray-50 dark:bg-black/20 rounded-2xl border border-gray-200 dark:border-white/10 opacity-70">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">Style Preview (Demo)</h3>
+                  <img src={stylePreview} alt="QR Style Preview" className="w-40 h-40 rounded-lg shadow-sm filter grayscale-[20%]" />
+                </div>
+              )}
 
               {error && <div className="mt-6 p-4 rounded-xl bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/50 text-red-600 dark:text-red-200">{error}</div>}
 
@@ -379,7 +428,8 @@ function App() {
   "text": "https://example.com",
   "format": "base64", // or "image"
   "scale": ${scale},
-  "quietzoneSize": ${quietzoneSize}
+  "quietzoneSize": ${quietzoneSize},
+  "dotStyle": "${dotStyle}"
 }`}
                 </pre>
               </div>
@@ -404,7 +454,7 @@ function App() {
                     {activeTab === 'curl' && `curl -X POST ${window.location.origin}/api/generateqr \\
   -H "Content-Type: application/json" \\
   -H "Software-Key: ${userSoftwareKey}" \\
-  -d '{"text": "Hello World", "format": "image", "scale": ${scale}, "quietzoneSize": ${quietzoneSize}}'`}
+  -d '{"text": "Hello World", "format": "image", "scale": ${scale}, "quietzoneSize": ${quietzoneSize}, "dotStyle": "${dotStyle}"}'`}
 
                     {activeTab === 'react' && `const generateQR = async () => {
   const response = await fetch('${window.location.origin}/api/generateqr', {
@@ -417,7 +467,8 @@ function App() {
       text: 'Hello World',
       format: 'base64',
       scale: ${scale},
-      quietzoneSize: ${quietzoneSize}
+      quietzoneSize: ${quietzoneSize},
+      dotStyle: '${dotStyle}'
     }),
   });
   
@@ -430,7 +481,8 @@ $payload = json_encode([
     'text' => 'Hello World',
     'format' => 'image',
     'scale' => ${scale},
-    'quietzoneSize' => ${quietzoneSize}
+    'quietzoneSize' => ${quietzoneSize},
+    'dotStyle' => '${dotStyle}'
 ]);
 
 $ch = curl_init('${window.location.origin}/api/generateqr');
@@ -463,7 +515,7 @@ class Program
         var client = new HttpClient();
         client.DefaultRequestHeaders.Add("Software-Key", "${userSoftwareKey}");
         
-        var json = "{\\"text\\":\\"Hello World\\",\\"format\\":\\"base64\\",\\"scale\\":${scale},\\"quietzoneSize\\":${quietzoneSize}}";
+        var json = "{\\"text\\":\\"Hello World\\",\\"format\\":\\"base64\\",\\"scale\\":${scale},\\"quietzoneSize\\":${quietzoneSize},\\"dotStyle\\":\\"${dotStyle}\\"}";
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         var response = await client.PostAsync("${window.location.origin}/api/generateqr", content);
