@@ -46,16 +46,21 @@ $softwareKeyHeader = $headers['Software-Key'] ?? '';
 
 $user = null;
 
+$isWebAccess = false;
+$isApiAccess = false;
+
 if (!empty($authHeader) && preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
     // Authenticate via Frontend JWT
     $jwt = $matches[1];
     $payload = $auth->verifyJWT($jwt);
     if ($payload) {
         $user = $auth->getUserById($payload['user_id']);
+        $isWebAccess = true;
     }
 } elseif (!empty($softwareKeyHeader)) {
     // Authenticate via API Key
     $user = $auth->getUserByLicenseKey($softwareKeyHeader);
+    $isApiAccess = true;
 }
 
 if (!$user) {
@@ -64,18 +69,20 @@ if (!$user) {
     exit;
 }
 
-if (empty($user['license_key']) || empty($user['license_token']) || empty($user['public_key'])) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'License verification failed: No license installed for this user.']);
-    exit;
-}
+if ($isApiAccess) {
+    if (empty($user['license_key']) || empty($user['license_token']) || empty($user['public_key'])) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'License verification failed: No valid license installed for API access.']);
+        exit;
+    }
 
-$licenseStatus = $licenseManager->verifyLicenseDataLocally($user['license_token'], $user['public_key']);
+    $licenseStatus = $licenseManager->verifyLicenseDataLocally($user['license_token'], $user['public_key']);
 
-if (!$licenseStatus['valid']) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'License verification failed: ' . $licenseStatus['message']]);
-    exit;
+    if (!$licenseStatus['valid']) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'License verification failed: ' . $licenseStatus['message']]);
+        exit;
+    }
 }
 
 $input = json_decode(file_get_contents('php://input'), true);

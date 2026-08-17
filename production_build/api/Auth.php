@@ -76,7 +76,7 @@ class Auth {
 
         $passwordHash = password_hash($data['password'], PASSWORD_DEFAULT);
 
-        $stmt = $this->db->prepare("INSERT INTO users (company_name, email, password_hash, domain_name, domain_ip, contact_name, mobile) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $this->db->prepare("INSERT INTO users (company_name, email, password_hash, domain_name, domain_ip, contact_name, mobile, qr_limit) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $data['company_name'],
             $data['email'],
@@ -84,7 +84,8 @@ class Auth {
             $data['domain_name'],
             $data['domain_ip'],
             $data['contact_name'],
-            $data['mobile']
+            $data['mobile'],
+            100
         ]);
         
         $userId = $this->db->lastInsertId();
