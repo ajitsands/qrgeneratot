@@ -15,7 +15,7 @@ export default function Footer() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://sandslab.com/get_our_latest_products.php');
+      const response = await fetch('api/products.php');
       const json = await response.json();
       if (json.status && json.data) {
         setProducts(json.data);
