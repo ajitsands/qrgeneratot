@@ -52,7 +52,7 @@ function App() {
     if (user) {
       loadStylePreview()
     }
-  }, [dotStyle, user])
+  }, [dotStyle, quietzoneSize, user])
 
   const loadStylePreview = async () => {
     try {
@@ -63,7 +63,7 @@ function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ dotStyle }),
+        body: JSON.stringify({ dotStyle, quietzoneSize }),
       })
       const data = await response.json()
       if (response.ok && data.success) {

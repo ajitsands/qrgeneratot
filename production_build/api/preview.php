@@ -53,11 +53,12 @@ $input = json_decode(file_get_contents('php://input'), true);
 
 $text = "https://www.sandslab.com";
 $dotStyle = $input['dotStyle'] ?? 'square'; // 'square' or 'round'
+$quietzoneSize = isset($input['quietzoneSize']) ? (int)$input['quietzoneSize'] : 4;
 
 $options = new QROptions();
 $options->outputType = QRMarkupSVG::class;
 $options->scale = 5;
-$options->quietzoneSize = 4;
+$options->quietzoneSize = $quietzoneSize;
 $options->addQuietzone = true;
 $options->imageBase64 = true;
 
