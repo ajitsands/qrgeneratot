@@ -187,7 +187,7 @@ function App() {
   const userSoftwareKey = user.license_key || 'INV-XXXXXX-XXXXXX'
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0F172A] text-gray-900 dark:text-white p-4 md:p-8 font-sans transition-colors duration-300 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:bg-[#0F172A] text-gray-900 dark:text-white p-4 md:p-8 font-sans transition-colors duration-300 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-200 dark:bg-purple-600/20 rounded-full blur-[120px] transition-colors"></div>
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-200 dark:bg-blue-600/20 rounded-full blur-[120px] transition-colors"></div>

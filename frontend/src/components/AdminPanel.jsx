@@ -56,7 +56,7 @@ export default function AdminPanel({ onBack }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0F172A] text-gray-900 dark:text-white p-8 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:bg-[#0F172A] text-gray-900 dark:text-white p-8 transition-colors duration-300">
       <div className="max-w-[95%] mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
