@@ -73,8 +73,7 @@ export default function AuthScreen({ onLoginSuccess }) {
         
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
-            <img src="https://home.sandslab.com/logo/logo_white.png" alt="SaNDS Lab Logo" className="h-16 hidden dark:block drop-shadow-md" />
-            <img src="https://home.sandslab.com/logo/logo_white.png" alt="SaNDS Lab Logo" className="h-16 block dark:hidden drop-shadow-md invert opacity-80" />
+            <img src="https://home.sandslab.com/logo/logo_white.png" alt="SaNDS Lab Logo" className="h-16 drop-shadow-md" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
           <p className="text-gray-500 dark:text-gray-400 text-sm transition-colors">
