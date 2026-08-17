@@ -129,6 +129,16 @@ function App() {
     }
   }
 
+  const downloadQR = () => {
+    if (!qrData) return;
+    const link = document.createElement('a');
+    link.href = qrData.format === 'base64' ? qrData.data : qrData.url;
+    link.download = 'qrcode.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loadingUser) {
     return <div className="min-h-screen bg-[#0F172A] text-white flex items-center justify-center">Loading...</div>
   }
@@ -259,6 +269,13 @@ function App() {
                 <div className="mt-8 flex flex-col items-center space-y-4 p-6 bg-gray-50 dark:bg-black/20 rounded-2xl border border-gray-200 dark:border-white/10">
                   <h3 className="text-lg font-medium text-green-600 dark:text-green-400">Success!</h3>
                   <img src={qrData.format === 'base64' ? qrData.data : qrData.url} alt="QR Code" className="w-48 h-48 rounded-lg shadow-lg" />
+                  <button
+                    onClick={downloadQR}
+                    className="mt-4 px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-semibold transition-colors shadow-md flex items-center justify-center"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    Download QR Code
+                  </button>
                 </div>
               )}
             </div>
