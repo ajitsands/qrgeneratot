@@ -85,6 +85,16 @@ if (!$input || empty($input['text'])) {
     exit;
 }
 
+// Check limits
+$limit = (int)$user['qr_limit'];
+$generatedCount = (int)$user['qr_generated_count'];
+
+if ($limit > 0 && $generatedCount >= $limit) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'QR Code generation limit reached. Please upgrade your license or contact support.']);
+    exit;
+}
+
 $text = $input['text'];
 $format = $input['format'] ?? 'base64'; // 'base64' or 'image'
 $scale = isset($input['scale']) ? (int)$input['scale'] : 5;
@@ -100,10 +110,15 @@ $options->imageBase64 = ($format === 'base64');
 if ($format === 'base64') {
     $options->imageBase64 = true;
     $qrcode = (new QRCode($options))->render($text);
+    
+    $auth->incrementQrCount($user['id']);
+    
     echo json_encode([
         'success' => true,
         'format' => 'base64',
-        'data' => $qrcode
+        'data' => $qrcode,
+        'qr_generated_count' => $generatedCount + 1,
+        'qr_limit' => $limit
     ]);
 } else {
     // Return image URL. We save it in a public temp folder.
@@ -117,6 +132,8 @@ if ($format === 'base64') {
     
     (new QRCode($options))->render($text, $filepath);
     
+    $auth->incrementQrCount($user['id']);
+    
     // Construct public URL
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $domainName = $_SERVER['HTTP_HOST'];
@@ -125,6 +142,8 @@ if ($format === 'base64') {
     echo json_encode([
         'success' => true,
         'format' => 'image',
-        'url' => $publicUrl
+        'url' => $publicUrl,
+        'qr_generated_count' => $generatedCount + 1,
+        'qr_limit' => $limit
     ]);
 }

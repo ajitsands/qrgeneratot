@@ -32,9 +32,23 @@ class Auth {
             license_key VARCHAR(255) DEFAULT NULL,
             license_token TEXT DEFAULT NULL,
             public_key TEXT DEFAULT NULL,
+            qr_generated_count INT DEFAULT 0,
+            qr_limit INT DEFAULT 0,
+            is_admin TINYINT(1) DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )";
         $this->db->exec($sql);
+        
+        // Add new columns if they don't exist (for existing databases)
+        try {
+            $this->db->exec("ALTER TABLE users ADD COLUMN qr_generated_count INT DEFAULT 0");
+        } catch (PDOException $e) {}
+        try {
+            $this->db->exec("ALTER TABLE users ADD COLUMN qr_limit INT DEFAULT 0");
+        } catch (PDOException $e) {}
+        try {
+            $this->db->exec("ALTER TABLE users ADD COLUMN is_admin TINYINT(1) DEFAULT 0");
+        } catch (PDOException $e) {}
     }
 
     public function registerUser($data) {
@@ -100,11 +114,18 @@ class Auth {
             throw new Exception("Invalid email or password.");
         }
 
+        // Auto-assign admin rights to specified emails
+        if ($user['email'] === 'ajitsands@gmail.com' || $user['email'] === 'ajit@sandslab.com') {
+            $this->db->exec("UPDATE users SET is_admin = 1 WHERE id = " . (int)$user['id']);
+            $user['is_admin'] = 1;
+        }
+
         // Generate JWT
         $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
         $payload = json_encode([
             'user_id' => $user['id'],
             'email' => $user['email'],
+            'is_admin' => (int)$user['is_admin'],
             'exp' => time() + (86400 * 7) // 7 days expiration
         ]);
 
@@ -122,7 +143,10 @@ class Auth {
                 'company_name' => $user['company_name'],
                 'email' => $user['email'],
                 'has_license' => !empty($user['license_key']),
-                'license_key' => $user['license_key']
+                'license_key' => $user['license_key'],
+                'qr_generated_count' => (int)$user['qr_generated_count'],
+                'qr_limit' => (int)$user['qr_limit'],
+                'is_admin' => (bool)$user['is_admin']
             ]
         ];
     }
@@ -166,5 +190,20 @@ class Auth {
     public function saveUserLicense($userId, $licenseKey, $token, $publicKey) {
         $stmt = $this->db->prepare("UPDATE users SET license_key = ?, license_token = ?, public_key = ? WHERE id = ?");
         $stmt->execute([$licenseKey, $token, $publicKey, $userId]);
+    }
+    
+    public function incrementQrCount($userId) {
+        $stmt = $this->db->prepare("UPDATE users SET qr_generated_count = qr_generated_count + 1 WHERE id = ?");
+        $stmt->execute([$userId]);
+    }
+
+    public function getAllUsers() {
+        $stmt = $this->db->query("SELECT id, company_name, email, domain_name, contact_name, mobile, license_key, qr_generated_count, qr_limit, is_admin, created_at FROM users ORDER BY created_at DESC");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateUserLimit($userId, $limit) {
+        $stmt = $this->db->prepare("UPDATE users SET qr_limit = ? WHERE id = ?");
+        $stmt->execute([(int)$limit, $userId]);
     }
 }

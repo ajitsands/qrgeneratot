@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import AuthScreen from './components/AuthScreen'
+import AdminPanel from './components/AdminPanel'
 import './App.css'
 
 function App() {
   const [user, setUser] = useState(null)
   const [loadingUser, setLoadingUser] = useState(true)
+  const [showAdmin, setShowAdmin] = useState(false)
 
   const [text, setText] = useState('')
   const [format, setFormat] = useState('base64')
@@ -82,6 +84,9 @@ function App() {
       }
 
       setQrData(data)
+      if (data.qr_generated_count !== undefined) {
+        setUser({ ...user, qr_generated_count: data.qr_generated_count, qr_limit: data.qr_limit })
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -131,6 +136,10 @@ function App() {
     return <AuthScreen onLoginSuccess={(userData) => setUser(userData)} />
   }
 
+  if (showAdmin && user.is_admin) {
+    return <AdminPanel onBack={() => setShowAdmin(false)} />
+  }
+
   const userSoftwareKey = user.license_key || 'INV-XXXXXX-XXXXXX'
 
   return (
@@ -149,10 +158,20 @@ function App() {
             <p className="text-gray-500 dark:text-gray-400 text-lg transition-colors">Create stunning QR codes instantly via Web or API</p>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="text-right hidden md:block">
+            <div className="text-right hidden md:block border-r border-gray-200 dark:border-white/10 pr-4 mr-2">
               <div className="text-sm font-medium">{user.company_name}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Generated: <span className="font-semibold text-purple-600 dark:text-purple-400">{user.qr_generated_count || 0}</span>
+                {user.qr_limit > 0 ? ` / ${user.qr_limit}` : ' (Unlimited)'}
+              </div>
             </div>
+            
+            {user.is_admin ? (
+              <button onClick={() => setShowAdmin(true)} className="px-3 py-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800/60 rounded-lg text-sm transition-colors font-medium shadow-sm">
+                Admin
+              </button>
+            ) : null}
+
             <button onClick={() => document.documentElement.classList.toggle('dark')} className="p-2 bg-gray-200 dark:bg-white/10 hover:bg-gray-300 dark:hover:bg-white/20 rounded-lg text-sm transition-colors" title="Toggle Theme">
               <svg className="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               <svg className="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
