@@ -136,9 +136,15 @@ function App() {
       const response = await fetch(src);
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
+      
+      let extension = 'png';
+      if (blob.type === 'image/svg+xml') extension = 'svg';
+      else if (blob.type === 'image/jpeg') extension = 'jpg';
+      else if (blob.type === 'image/gif') extension = 'gif';
+
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.download = 'qrcode.png';
+      link.download = `qrcode.${extension}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
