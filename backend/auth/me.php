@@ -37,14 +37,22 @@ try {
         throw new Exception("User not found.");
     }
 
+    $hasLicense = false;
+    if (!empty($user['license_key']) && !empty($user['license_token']) && !empty($user['public_key'])) {
+        require_once dirname(__DIR__) . '/LicenseManager.php';
+        $lm = new LicenseManager();
+        $status = $lm->verifyLicenseDataLocally($user['license_token'], $user['public_key']);
+        $hasLicense = $status['valid'];
+    }
+
     echo json_encode([
         'success' => true,
         'user' => [
             'id' => $user['id'],
             'company_name' => $user['company_name'],
             'email' => $user['email'],
-            'has_license' => !empty($user['license_key']),
-            'license_key' => $user['license_key'],
+            'has_license' => $hasLicense,
+            'license_key' => $hasLicense ? $user['license_key'] : null,
             'qr_generated_count' => (int)$user['qr_generated_count'],
             'qr_limit' => (int)$user['qr_limit'],
             'is_admin' => (bool)$user['is_admin']
