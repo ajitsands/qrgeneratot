@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Footer from './Footer';
-import AppLogo from '../assets/Logo-WithoutISO.png';
+import AppLogoLight from '../assets/SaNDSLab-LogoForWhite.png';
+import AppLogoDark from '../assets/SaNDSLab-LogoForDark.png';
 
 export default function AuthScreen({ onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -74,8 +75,9 @@ export default function AuthScreen({ onLoginSuccess }) {
       <div className="w-full max-w-md bg-white dark:bg-white/5 rounded-3xl p-8 border border-gray-200 dark:border-white/10 shadow-2xl backdrop-blur-xl transition-colors duration-300">
         
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <img src={AppLogo} alt="SaNDS Lab Logo" className="h-16 drop-shadow-md" />
+          <div className="flex justify-center items-center mb-4">
+            <img src={AppLogoLight} alt="SaNDSLab Logo" className="h-16 drop-shadow-md block dark:hidden" />
+            <img src={AppLogoDark} alt="SaNDSLab Logo" className="h-16 drop-shadow-md hidden dark:block" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
           <p className="text-gray-500 dark:text-gray-400 text-sm transition-colors">

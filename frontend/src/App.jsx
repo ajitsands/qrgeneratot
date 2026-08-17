@@ -3,7 +3,8 @@ import AuthScreen from './components/AuthScreen'
 import AdminPanel from './components/AdminPanel'
 import QrHistory from './components/QrHistory'
 import Footer from './components/Footer'
-import AppLogo from './assets/Logo-WithoutISO.png'
+import AppLogoLight from './assets/SaNDSLab-LogoForWhite.png'
+import AppLogoDark from './assets/SaNDSLab-LogoForDark.png'
 import './App.css'
 
 function App() {
@@ -196,7 +197,8 @@ function App() {
       <div className="max-w-[95%] mx-auto">
         <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
           <div className="text-center md:text-left flex flex-col md:flex-row items-center gap-4">
-            <img src={AppLogo} alt="SaNDS Lab Logo" className="h-16 drop-shadow-md" />
+            <img src={AppLogoLight} alt="SaNDSLab Logo" className="h-16 drop-shadow-md block dark:hidden" />
+            <img src={AppLogoDark} alt="SaNDSLab Logo" className="h-16 drop-shadow-md hidden dark:block" />
             <div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 drop-shadow-sm transition-colors">
                 SaNDS Lab QR
