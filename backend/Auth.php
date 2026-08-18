@@ -222,9 +222,9 @@ class Auth {
         $stmt->execute([$licenseKey, $token, $publicKey, $userId]);
     }
     
-    public function incrementQrCount($userId) {
-        $stmt = $this->db->prepare("UPDATE users SET qr_generated_count = COALESCE(qr_generated_count, 0) + 1 WHERE id = ?");
-        $stmt->execute([$userId]);
+    public function incrementQrCount($userId, $amount = 1) {
+        $stmt = $this->db->prepare("UPDATE users SET qr_generated_count = COALESCE(qr_generated_count, 0) + ? WHERE id = ?");
+        $stmt->execute([(int)$amount, $userId]);
     }
 
     public function getAllUsers() {

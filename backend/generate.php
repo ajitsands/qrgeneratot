@@ -99,23 +99,38 @@ if ($isApiAccess) {
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
-if (!$input || empty($input['text'])) {
+
+$isBulk = false;
+$textsArray = [];
+
+if (isset($input['texts']) && is_array($input['texts'])) {
+    $isBulk = true;
+    $textsArray = $input['texts'];
+} elseif (isset($input['text'])) {
+    $textsArray = [$input['text']];
+} else {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Text is required to generate QR code.']);
+    echo json_encode(['success' => false, 'message' => 'Either "text" (string) or "texts" (array) is required.']);
+    exit;
+}
+
+if (empty($textsArray)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'No text provided.']);
     exit;
 }
 
 // Check limits
 $limit = (int)$user['qr_limit'];
 $generatedCount = (int)$user['qr_generated_count'];
+$requestedCount = count($textsArray);
 
-if ($limit > 0 && $generatedCount >= $limit) {
+if ($limit > 0 && ($generatedCount + $requestedCount) > $limit) {
     http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'QR Code generation limit reached. Please upgrade your license or contact support.']);
+    echo json_encode(['success' => false, 'message' => "QR Code generation limit reached. You requested $requestedCount QR(s) but only have " . max(0, $limit - $generatedCount) . " remaining."]);
     exit;
 }
 
-$text = $input['text'];
 $format = $input['format'] ?? 'base64'; // 'base64' or 'image'
 $scale = isset($input['scale']) ? (int)$input['scale'] : 5;
 $quietzoneSize = isset($input['quietzoneSize']) ? (int)$input['quietzoneSize'] : 4;
@@ -140,20 +155,40 @@ if ($dotStyle === 'round') {
     ];
 }
 
+$results = [];
+
 if ($format === 'base64') {
     $options->imageBase64 = true;
-    $qrcode = (new QRCode($options))->render($text);
     
-    $auth->incrementQrCount($user['id']);
-    $auth->logQrCode($user['id'], $text, $qrcode, 'base64', $options->scale, $options->quietzoneSize);
+    foreach ($textsArray as $text) {
+        $qrcode = (new QRCode($options))->render($text);
+        $auth->logQrCode($user['id'], $text, $qrcode, 'base64', $options->scale, $options->quietzoneSize);
+        $results[] = [
+            'text' => $text,
+            'format' => 'base64',
+            'data' => $qrcode
+        ];
+    }
     
-    echo json_encode([
-        'success' => true,
-        'format' => 'base64',
-        'data' => $qrcode,
-        'qr_generated_count' => $generatedCount + 1,
-        'qr_limit' => $limit
-    ]);
+    $auth->incrementQrCount($user['id'], $requestedCount);
+    
+    if (!$isBulk) {
+        echo json_encode([
+            'success' => true,
+            'format' => 'base64',
+            'data' => $results[0]['data'],
+            'qr_generated_count' => $generatedCount + $requestedCount,
+            'qr_limit' => $limit
+        ]);
+    } else {
+        echo json_encode([
+            'success' => true,
+            'format' => 'base64',
+            'results' => $results,
+            'qr_generated_count' => $generatedCount + $requestedCount,
+            'qr_limit' => $limit
+        ]);
+    }
 } else {
     // Return image URL. We save it in a public temp folder.
     $tempDir = __DIR__ . '/public/qrcodes';
@@ -161,27 +196,44 @@ if ($format === 'base64') {
         mkdir($tempDir, 0777, true);
     }
     
-    $filename = md5($text . time()) . '.svg';
-    $filepath = $tempDir . '/' . $filename;
-    
     $options->imageBase64 = false;
-    $qrcodeContent = (new QRCode($options))->render($text);
-    file_put_contents($filepath, $qrcodeContent);
-    
-    $auth->incrementQrCount($user['id']);
-    
-    // Construct public URL
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $domainName = $_SERVER['HTTP_HOST'];
-    $publicUrl = $protocol . $domainName . '/api/public/qrcodes/' . $filename;
     
-    $auth->logQrCode($user['id'], $text, $publicUrl, 'image', $options->scale, $options->quietzoneSize);
+    foreach ($textsArray as $text) {
+        $filename = md5($text . time() . rand(0, 9999)) . '.svg';
+        $filepath = $tempDir . '/' . $filename;
+        
+        $qrcodeContent = (new QRCode($options))->render($text);
+        file_put_contents($filepath, $qrcodeContent);
+        
+        $publicUrl = $protocol . $domainName . '/api/public/qrcodes/' . $filename;
+        $auth->logQrCode($user['id'], $text, $publicUrl, 'image', $options->scale, $options->quietzoneSize);
+        
+        $results[] = [
+            'text' => $text,
+            'format' => 'image',
+            'url' => $publicUrl
+        ];
+    }
     
-    echo json_encode([
-        'success' => true,
-        'format' => 'image',
-        'url' => $publicUrl,
-        'qr_generated_count' => $generatedCount + 1,
-        'qr_limit' => $limit
-    ]);
+    $auth->incrementQrCount($user['id'], $requestedCount);
+    
+    if (!$isBulk) {
+        echo json_encode([
+            'success' => true,
+            'format' => 'image',
+            'url' => $results[0]['url'],
+            'qr_generated_count' => $generatedCount + $requestedCount,
+            'qr_limit' => $limit
+        ]);
+    } else {
+        echo json_encode([
+            'success' => true,
+            'format' => 'image',
+            'results' => $results,
+            'qr_generated_count' => $generatedCount + $requestedCount,
+            'qr_limit' => $limit
+        ]);
+    }
 }
