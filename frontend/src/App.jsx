@@ -476,7 +476,7 @@ function App() {
               API Integration
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm">
-              You can integrate our QR Code Generator directly into your own applications. Authenticate by passing your Software Key in the headers.
+              You can integrate our QR Code Generator directly into your own applications. Authenticate by passing your Software Key in the headers. Support for single or bulk (array) QR code generation.
             </p>
 
             <div className="space-y-6">
@@ -491,7 +491,12 @@ function App() {
                 <h3 className="font-semibold text-purple-700 dark:text-purple-300">Request Body (JSON)</h3>
                 <pre className="p-4 bg-gray-50 dark:bg-black/40 rounded-lg text-sm text-gray-700 dark:text-gray-300 font-mono overflow-x-auto border border-gray-200 dark:border-white/5">
 {`{
-  "text": "https://example.com",
+  // For a single QR Code
+  "text": "https://example.com", 
+  
+  // OR for bulk generation (array of strings)
+  // "texts": ["https://example.com/1", "https://example.com/2"],
+
   "format": "base64", // or "image"
   "scale": ${scale},
   "quietzoneSize": ${quietzoneSize},
@@ -520,7 +525,7 @@ function App() {
                     {activeTab === 'curl' && `curl -X POST ${window.location.origin}/api/generateqr \\
   -H "Content-Type: application/json" \\
   -H "Software-Key: ${userSoftwareKey}" \\
-  -d '{"text": "Hello World", "format": "image", "scale": ${scale}, "quietzoneSize": ${quietzoneSize}, "dotStyle": "${dotStyle}"}'`}
+  -d '{"texts": ["Item 1", "Item 2"], "format": "image", "scale": ${scale}, "quietzoneSize": ${quietzoneSize}, "dotStyle": "${dotStyle}"}'`}
 
                     {activeTab === 'react' && `const generateQR = async () => {
   const response = await fetch('${window.location.origin}/api/generateqr', {
@@ -530,7 +535,7 @@ function App() {
       'Software-Key': '${userSoftwareKey}'
     },
     body: JSON.stringify({
-      text: 'Hello World',
+      texts: ['Item 1', 'Item 2'], // Bulk generation
       format: 'base64',
       scale: ${scale},
       quietzoneSize: ${quietzoneSize},
@@ -544,7 +549,7 @@ function App() {
 
                     {activeTab === 'php' && `<?php
 $payload = json_encode([
-    'text' => 'Hello World',
+    'texts' => ['Item 1', 'Item 2'], // Bulk generation array
     'format' => 'image',
     'scale' => ${scale},
     'quietzoneSize' => ${quietzoneSize},
@@ -581,7 +586,7 @@ class Program
         var client = new HttpClient();
         client.DefaultRequestHeaders.Add("Software-Key", "${userSoftwareKey}");
         
-        var json = "{\\"text\\":\\"Hello World\\",\\"format\\":\\"base64\\",\\"scale\\":${scale},\\"quietzoneSize\\":${quietzoneSize},\\"dotStyle\\":\\"${dotStyle}\\"}";
+        var json = "{\\"texts\\":[\\"Item 1\\",\\"Item 2\\"],\\"format\\":\\"base64\\",\\"scale\\":${scale},\\"quietzoneSize\\":${quietzoneSize},\\"dotStyle\\":\\"${dotStyle}\\"}";
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         var response = await client.PostAsync("${window.location.origin}/api/generateqr", content);
